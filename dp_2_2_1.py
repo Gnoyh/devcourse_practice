@@ -1,12 +1,12 @@
 # 연결 리스트 순회
 
 def traverse(self):
-        ll = []
-        curr = self.head
+    ll = []
+    curr = self.head
         
-        while curr != None:
-            ll.append(curr.data)
+    while curr != None:
+        ll.append(curr.data)
             
-            curr = curr.next
+        curr = curr.next
             
-        return ll
+    return ll
