@@ -8,5 +8,10 @@ def index(request):
 
     return render(request, 'polls/index.html', context)
 
+def detail(request, question_id):
+    question = Question.objects.get(pk=question_id)
+
+    return render(request, 'polls/detail.html', {'question': question})
+
 def some_url(request):
     return HttpResponse("Some url 구현.")
