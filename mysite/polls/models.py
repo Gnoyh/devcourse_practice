@@ -1,16 +1,18 @@
 from django.db import models
+from django.contrib import admin
 from django.utils import timezone
 import datetime
 
 # Create your models here.
 
 class Question(models.Model):
-    question = models.CharField(max_length=200)
-    pub_date = models.DateTimeField(auto_now_add=True)
+    question = models.CharField(max_length=200, verbose_name='질문')
+    pub_date = models.DateTimeField(auto_now_add=True, verbose_name='생성일')
     # score = models.FloatField(default=0.0)
     # is_something_wrong = models.BooleanField(default=False)
     # json_field = models.JSONField(default=dict)
 
+    @admin.display(boolean=True, description="최근 생성(하루 기준)")
     def was_published_recently(self):
         return self.pub_date >= timezone.now() - datetime.timedelta(days=1)
 
