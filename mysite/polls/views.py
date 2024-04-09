@@ -21,9 +21,14 @@ def vote(request, question_id):
     try:
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
     except (KeyError, Choice.DoesNotExist):
-        return render(request, 'polls/detail.html', {'question': question, 'error_message': f'선택이 없습니다, id={request.POST['choice']}'})
+        return render(request, 'polls/detail.html', {'question': question, 'error_message': '선택이 없습니다'})
     else:
         selected_choice.votes = F('votes') + 1
         selected_choice.save()
 
-        return HttpResponseRedirect(reverse('polls:index'))
+        return HttpResponseRedirect(reverse('polls:result', args=(question_id,)))
+
+def result(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+
+    return render(request, 'polls/result.html', {'question': question})
