@@ -10,7 +10,7 @@ class QuestionSerializer(serializers.Serializer):
         return Question.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        instance.question = validated_data.get('question', instance.question)
+        instance.question = validated_data.get('question', instance.question) + " (serializer)"
         instance.save()
 
         return instance
