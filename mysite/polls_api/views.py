@@ -1,6 +1,6 @@
 from rest_framework import generics
 from polls.models import Question
-from polls_api.serializers import QuestionSerializer, UserSerializer
+from polls_api.serializers import *
 from django.contrib.auth.models import User
 
 # Create your views here.
@@ -20,3 +20,6 @@ class UserList(generics.ListAPIView):
 class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+class RegisterUser(generics.CreateAPIView):
+    serializer_class = RegisterSerializer
