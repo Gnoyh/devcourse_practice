@@ -1,5 +1,5 @@
 from rest_framework import generics, permissions
-from polls.models import Question
+from polls.models import *
 from polls_api.serializers import *
 from django.contrib.auth.models import User
 from .permissions import *
@@ -29,3 +29,18 @@ class UserDetail(generics.RetrieveAPIView):
 
 class RegisterUser(generics.CreateAPIView):
     serializer_class = RegisterSerializer
+
+class VoteList(generics.ListCreateAPIView):
+    serializer_class = VoteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self, *args, **kwargs):
+        return Vote.objects.filter(voter=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(voter=self.request.user)
+
+class VoteDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Vote.objects.all()
+    serializer_class = VoteSerializer
+    ermission_classes = [permissions.IsAuthenticated, IsVoter]
