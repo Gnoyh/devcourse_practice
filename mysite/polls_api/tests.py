@@ -1,9 +1,24 @@
 from django.test import TestCase
-from polls_api.serializers import *
+from django.urls import reverse
+from django.utils import timezone
 from django.contrib.auth.models import User
+from rest_framework import status
+from rest_framework.test import APITestCase
+from polls_api.serializers import *
 from polls.models import *
 
 # Create your tests here.
+class QuestionSerializerTest(TestCase):
+    def test_with_vaild_data(self):
+        serializer = QuestionSerializer(data={'question': 'test'})
+        self.assertEqual(serializer.is_valid(), True)
+        new_question = serializer.save()
+        self.assertIsNotNone(new_question.id)
+
+    def test_with_invalid_data(self):
+        serializer = QuestionSerializer(data={'question': ''})
+        self.assertEqual(serializer.is_valid(), False)
+
 class VoteSerializerTest(TestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser')
@@ -63,13 +78,30 @@ class VoteSerializerTest(TestCase):
         serializer = VoteSerializer(data=data)
         self.assertTrue(serializer.is_valid())
 
-class QuestionSerializerTest(TestCase):
-    def test_with_vaild_data(self):
-        serializer = QuestionSerializer(data={'question': 'test'})
-        self.assertEqual(serializer.is_valid(), True)
-        new_question = serializer.save()
-        self.assertIsNotNone(new_question.id)
+class QuestionListTest(APITestCase):
+    def setUp(self):
+        self.question_data = {'question': 'test'}
+        self.url = reverse('question-list')
 
-    def test_with_invalid_data(self):
-        serializer = QuestionSerializer(data={'question': ''})
-        self.assertEqual(serializer.is_valid(), False)
+    def test_create_question(self):
+        user = User.objects.create(username='testuser', password='testpw')
+        self.client.force_authenticate(user=user)
+        response = self.client.post(self.url, self.question_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Question.objects.count(), 1)
+        question = Question.objects.first()
+        self.assertEqual(question.question, self.question_data['question'])
+        self.assertLess((timezone.now() - question.pub_date).total_seconds(), 1)
+
+    def test_create_question_without_authentication(self):
+        response = self.client.post(self.url, self.question_data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_list_questions(self):
+        question = Question.objects.create(question='test')
+        choice = Choice.objects.create(question=question, choice_text='1')
+        Question.objects.create(question='test2')
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0]['choices'][0]['choice_text'], choice.choice_text)
